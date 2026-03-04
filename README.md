@@ -1,6 +1,6 @@
 # Monte Carlo simulations in Physics
 
-Examples of Monte Carlo simulations in Physics using Metropolis algorithm:
+Examples of Monte Carlo simulations in Physics using Metropolis-Hastings algorithm:
 
 - Lennard-Jones system at fixed density and temperature
 - Ideal two state model
