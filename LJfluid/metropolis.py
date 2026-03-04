@@ -1,6 +1,7 @@
 import random
 import math
 import copy
+import matplotlib.pyplot as plt
 
 # Set the number of atoms in the box
 n_atoms = 25
@@ -21,6 +22,12 @@ temperature = 298.15   # kelvin
 # (these are the OPLS parameters for Krypton)
 sigma = 3.624         # angstroms
 epsilon = 0.317       # kcal mol-1
+
+# Create a data file to output coordinates
+filename="trajectory.pdb"
+FILE = open(filename, "w")
+# Create a data file to output Energy and other data
+FILE2= open("Energy.dat","w")
 
 # Create an array to hold the coordinates of the atoms
 coords = []
@@ -57,19 +64,21 @@ def wrap_into_box(x, box):
 
 
 def print_pdb(move):
-    """Print a PDB for the specified move"""
-    filename = "output%000006d.pdb" % move
-
-    FILE = open(filename, "w")
-
+	#Open file to add data
+    FILE = open(filename, "a")
+    
+    #write simulation box data
     FILE.write("CRYST1 %8.3f %8.3f %8.3f  90.00  90.00  90.00\n" % \
                   (box_size[0], box_size[1], box_size[2]))
-
+    
+    #write atoms data
     for i in range(0,n_atoms):
         FILE.write("ATOM  %5d  Kr   Kr     1    %8.3f%8.3f%8.3f  1.00  0.00          Kr\n" % \
                       (i+1, coords[i][0], coords[i][1], coords[i][2]))
-        FILE.write("TER\n")
-
+        #FILE.write("TER\n")
+    
+    #close file
+    FILE.write("END\n")
     FILE.close()
 
 
@@ -117,7 +126,17 @@ naccept = 0
 # The total number of rejected moves
 nreject = 0
 
-# Print the initial PDB file
+#ratio accepted/total
+ratio=[]
+
+# Potential Energy
+Epot_t=[]
+t_step=[]
+
+#activate interactive plot
+plt.ion()
+
+# Save the initial coordinates in PDB file
 print_pdb(0)
 
 # Now perform all of the moves
@@ -182,8 +201,33 @@ for move in range(1,num_moves+1):
     # print the energy every 10 moves
     if move % 10 == 0:
         print("%s %s  %s  %s" % (move, total_energy, naccept, nreject))
-
+        FILE2.write("%s %s  %s  %s \n" % (move, total_energy, naccept, nreject))
+        
+        #accumulate data
+        ratio.append(float(naccept)/float(naccept+nreject))        
+        Epot_t.append(total_energy)
+        t_step.append(move)
+        
+        #Plot evolution of Energy 
+        plt.title('Energy at MC iteration=%d'%move);
+        plt.ylabel('Energy')
+        plt.plot(t_step, Epot_t, 'b+-')
+        plt.xlabel('MC step')
+        plt.pause(0.01)
+        
 
     # print the coordinates every 100 moves
     if move % 100 == 0:
         print_pdb(move)
+    
+#End of calculation
+FILE2.close()    
+#interactive plotting off
+plt.ioff()
+plt.show()
+#Plot evolution of accepted/rejected trials 
+plt.title('Acceptance ratio of MC moves');
+plt.ylabel('Ratio of accepted moves')
+plt.xlabel('MC step')
+plt.plot(t_step, ratio, 'r+-')
+plt.show()
