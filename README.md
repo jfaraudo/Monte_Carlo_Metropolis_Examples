@@ -2,6 +2,7 @@
 
 Examples of Monte Carlo simulations in Physics using Metropolis algorithm:
 
+- Lennard-Jones system at fixed density and temperature
 - Ideal two state model
 - Ising 2D model (interacting spins in absence of external magnetic field)
 
